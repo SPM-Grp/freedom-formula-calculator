@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0F2019" />
+    <meta
+      name="description"
+      content="CLEAR Command Center — the single tool that follows you through the 8-week CLEAR Program."
+    />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231A3C2E'/><text x='50%25' y='60%25' text-anchor='middle' font-family='Georgia,serif' font-size='30' font-weight='700' fill='%23C4A265'>1%25</text></svg>" />
+    <title>CLEAR Command Center — The One Percent Playbook</title>
+    <meta property="og:title" content="CLEAR Command Center" />
+    <meta property="og:description" content="The Freedom Formula Calculator + the 8-week CLEAR Program tool." />
+    <meta name="color-scheme" content="dark" />
+    <style>
+      html, body, #root { height: 100%; margin: 0; padding: 0; background: #0F2019; }
+      body { font-family: "Helvetica Neue", system-ui, -apple-system, sans-serif; color: #fff; }
+      * { box-sizing: border-box; }
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-track { background: #091410; }
+      ::-webkit-scrollbar-thumb { background: rgba(196,162,101,0.3); border-radius: 5px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(196,162,101,0.5); }
+
+      /* Mobile responsive — stack grids and hide the full left nav on narrow screens */
+      @media (max-width: 720px) {
+        /* Generic: any 2+ column grid collapses to single column */
+        div[style*="grid-template-columns: 1fr 1fr"],
+        div[style*="grid-template-columns: repeat(2"],
+        div[style*="grid-template-columns: repeat(3"],
+        div[style*="grid-template-columns: repeat(4"],
+        div[style*="grid-template-columns: repeat(5"] {
+          grid-template-columns: 1fr !important;
+        }
+        /* Tables scroll horizontally */
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+        /* Header top-bar layout reflows */
+        h1 { font-size: 24px !important; }
+        /* Left nav turns into a top horizontal scroller on narrow screens */
+        nav[data-role="left-nav"] {
+          width: 100% !important;
+          min-width: 0 !important;
+          height: auto !important;
+          position: static !important;
+          flex-direction: column !important;
+          border-right: none !important;
+          border-bottom: 1px solid rgba(196,162,101,0.18);
+        }
+      }
+      @media (max-width: 480px) {
+        main { padding: 16px !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
