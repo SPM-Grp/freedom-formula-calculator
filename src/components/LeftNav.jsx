@@ -15,25 +15,51 @@ export const LeftNav = ({
   user,
   onSignIn,
   onSignOut,
+  mobile = false,
+  onClose,
 }) => {
+  // In mobile drawer mode the parent positions and sizes us — we just render
+  // the same content with the drawer-friendly chrome (full-height, no
+  // sticky positioning, no fixed width).
   return (
     <nav
       data-role="left-nav"
       style={{
         background: gradients.appBackground,
-        borderRight: `1px solid ${alpha.goldA18}`,
-        width: 240,
-        minWidth: 240,
-        height: "100vh",
+        borderRight: mobile ? "none" : `1px solid ${alpha.goldA18}`,
+        width: mobile ? "100%" : 240,
+        minWidth: mobile ? 0 : 240,
+        height: mobile ? "100%" : "100vh",
+        minHeight: mobile ? "100vh" : undefined,
         padding: "24px 0",
         display: "flex",
         flexDirection: "column",
-        position: "sticky",
-        top: 0,
+        position: mobile ? "static" : "sticky",
+        top: mobile ? "auto" : 0,
         overflowY: "auto",
       }}
     >
-      <div style={{ padding: "0 22px 20px", borderBottom: `1px solid ${alpha.goldA12}` }}>
+      <div style={{ padding: "0 22px 20px", borderBottom: `1px solid ${alpha.goldA12}`, position: "relative" }}>
+        {mobile && onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close navigation"
+            style={{
+              position: "absolute",
+              top: -6,
+              right: 14,
+              background: "transparent",
+              border: "none",
+              color: alpha.whiteA60,
+              fontSize: 22,
+              cursor: "pointer",
+              lineHeight: 1,
+              padding: 4,
+            }}
+          >
+            ×
+          </button>
+        )}
         <div
           style={{
             fontFamily: fonts.serif,

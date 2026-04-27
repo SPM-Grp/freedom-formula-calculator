@@ -8,6 +8,7 @@ import { SaveIndicator } from "./SaveIndicator";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { AskDelphi } from "./AskDelphi";
 import { usePersistence } from "../hooks/usePersistence";
+import { useViewport } from "../hooks/useViewport";
 import { supabase } from "../lib/supabase";
 
 import { StartHere } from "./weeks/StartHere";
@@ -36,6 +37,8 @@ export const AppShell = ({ auth, enrollment }) => {
   const { user, signInWithGoogle, signOut, userRow } = auth;
   const { isUnlocked, previewAll } = enrollment;
   const { loaded } = usePersistence();
+  const { isMobile } = useViewport();
+  const [navOpen, setNavOpen] = useState(false);
 
   // Admin helper — `?set_weeks=N` sets the current user's enrolled_weeks and
   // reloads. Only effective when Supabase is connected + signed in.
@@ -69,6 +72,8 @@ export const AppShell = ({ auth, enrollment }) => {
   const selectWeek = (slug) => {
     setActiveSlug(slug);
     if (typeof window !== "undefined") window.location.hash = slug;
+    // On mobile, picking a week auto-closes the drawer so users see the page.
+    setNavOpen(false);
   };
 
   // Deep-link helper — jump to a slug AND a specific sub-tab in one call.
@@ -99,6 +104,167 @@ export const AppShell = ({ auth, enrollment }) => {
 
   const suppressBanner = activeSlug === "yield" || activeSlug === "start_here";
 
+  // Shared inner content (sub-tabs + week panel or locked preview).
+  const innerContent = (
+    <>
+      <SaveIndicator />
+
+      {!user && !suppressBanner && (
+        <SignInBanner onSignIn={signInWithGoogle} activeSlug={activeSlug} />
+      )}
+
+      {unlocked ? (
+        <>
+          {!activeWeek.hasOwnSubNav && (
+            <SubTabs tabs={activeWeek.subtabs} active={activeSub} onChange={setActiveSub} />
+          )}
+          {WeekComponent ? (
+            <ErrorBoundary weekLabel={activeWeek.title}>
+              {!loaded ? (
+                <LoadingState />
+              ) : (
+                <WeekComponent
+                  activeSub={activeSub}
+                  setActiveSub={setActiveSub}
+                  auth={auth}
+                  enrollment={enrollment}
+                  setActiveSlug={selectWeek}
+                  navigate={navigate}
+                />
+              )}
+            </ErrorBoundary>
+          ) : (
+            <div style={{ color: alpha.whiteA60 }}>Not yet built.</div>
+          )}
+        </>
+      ) : (
+        <LockedPreview slug={activeSlug} />
+      )}
+    </>
+  );
+
+  // ─── MOBILE SHELL ───────────────────────────────────────────────────────
+  // Top bar with brand + hamburger; LeftNav becomes a slide-in drawer
+  // overlaid above main, with a dimming backdrop. Clicking a week auto-
+  // closes the drawer (handled in selectWeek above).
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: gradients.appBackground,
+          fontFamily: fonts.sans,
+          color: colors.white,
+        }}
+      >
+        {/* Top bar — sticky */}
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 14px",
+            background: gradients.appBackground,
+            borderBottom: `1px solid ${alpha.goldA18}`,
+          }}
+        >
+          <button
+            onClick={() => setNavOpen(true)}
+            aria-label="Open navigation"
+            style={{
+              background: "transparent",
+              border: `1px solid ${alpha.goldA30}`,
+              color: colors.goldLight,
+              borderRadius: 6,
+              padding: "8px 10px",
+              cursor: "pointer",
+              fontFamily: fonts.sans,
+              fontSize: 14,
+              fontWeight: 700,
+              lineHeight: 1,
+              minWidth: 38,
+            }}
+          >
+            ☰
+          </button>
+          <div
+            style={{
+              fontFamily: fonts.serif,
+              color: colors.goldLight,
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              textAlign: "center",
+              flex: 1,
+              padding: "0 8px",
+            }}
+          >
+            {activeWeek?.nav || "CLEAR"}
+          </div>
+          {/* Right-side spacer to keep the title centered */}
+          <div style={{ minWidth: 38 }} aria-hidden="true" />
+        </div>
+
+        {/* Drawer + backdrop */}
+        {navOpen && (
+          <>
+            <div
+              onClick={() => setNavOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.5)",
+                zIndex: 50,
+              }}
+            />
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: "min(85vw, 300px)",
+                zIndex: 60,
+                boxShadow: "4px 0 24px rgba(0,0,0,0.5)",
+                overflowY: "auto",
+              }}
+            >
+              <LeftNav
+                activeSlug={activeSlug}
+                onSelect={selectWeek}
+                isUnlocked={isUnlocked}
+                previewAll={previewAll}
+                user={user}
+                userRow={userRow}
+                onSignIn={signInWithGoogle}
+                onSignOut={signOut}
+                mobile
+                onClose={() => setNavOpen(false)}
+              />
+            </div>
+          </>
+        )}
+
+        <main
+          style={{
+            padding: "16px 14px 60px",
+            color: colors.white,
+            minWidth: 0,
+            position: "relative",
+          }}
+        >
+          {innerContent}
+        </main>
+
+        <AskDelphi />
+      </div>
+    );
+  }
+
+  // ─── DESKTOP SHELL (unchanged behavior) ─────────────────────────────────
   return (
     <div
       style={{
@@ -129,39 +295,7 @@ export const AppShell = ({ auth, enrollment }) => {
           position: "relative",
         }}
       >
-        <SaveIndicator />
-
-        {!user && !suppressBanner && (
-          <SignInBanner onSignIn={signInWithGoogle} activeSlug={activeSlug} />
-        )}
-
-        {unlocked ? (
-          <>
-            {!activeWeek.hasOwnSubNav && (
-              <SubTabs tabs={activeWeek.subtabs} active={activeSub} onChange={setActiveSub} />
-            )}
-            {WeekComponent ? (
-              <ErrorBoundary weekLabel={activeWeek.title}>
-                {!loaded ? (
-                  <LoadingState />
-                ) : (
-                  <WeekComponent
-                    activeSub={activeSub}
-                    setActiveSub={setActiveSub}
-                    auth={auth}
-                    enrollment={enrollment}
-                    setActiveSlug={selectWeek}
-                    navigate={navigate}
-                  />
-                )}
-              </ErrorBoundary>
-            ) : (
-              <div style={{ color: alpha.whiteA60 }}>Not yet built.</div>
-            )}
-          </>
-        ) : (
-          <LockedPreview slug={activeSlug} />
-        )}
+        {innerContent}
       </main>
 
       {/* Floating Ask Delphi button — always available */}

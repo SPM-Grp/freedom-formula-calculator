@@ -22,33 +22,30 @@
       ::-webkit-scrollbar-thumb { background: rgba(196,162,101,0.3); border-radius: 5px; }
       ::-webkit-scrollbar-thumb:hover { background: rgba(196,162,101,0.5); }
 
-      /* Mobile responsive — stack grids and hide the full left nav on narrow screens */
+      /* Mobile responsive — collapse multi-column grids, scroll tables.
+         The AppShell handles its own mobile layout (drawer + top bar) via
+         the useViewport hook in JS, so we no longer need to force the
+         left nav's geometry from CSS. */
       @media (max-width: 720px) {
         /* Generic: any 2+ column grid collapses to single column */
         div[style*="grid-template-columns: 1fr 1fr"],
+        div[style*="grid-template-columns: 2fr 1fr 1fr 1fr"],
+        div[style*="grid-template-columns: 2fr 1fr 1fr"],
         div[style*="grid-template-columns: repeat(2"],
         div[style*="grid-template-columns: repeat(3"],
         div[style*="grid-template-columns: repeat(4"],
-        div[style*="grid-template-columns: repeat(5"] {
+        div[style*="grid-template-columns: repeat(5"],
+        div[style*="grid-template-columns: repeat(auto-fit, minmax(280"],
+        div[style*="grid-template-columns: repeat(auto-fit, minmax(320"] {
           grid-template-columns: 1fr !important;
         }
-        /* Tables scroll horizontally */
+        /* Tables scroll horizontally instead of overflowing the viewport */
         table { display: block; overflow-x: auto; white-space: nowrap; }
-        /* Header top-bar layout reflows */
-        h1 { font-size: 24px !important; }
-        /* Left nav turns into a top horizontal scroller on narrow screens */
-        nav[data-role="left-nav"] {
-          width: 100% !important;
-          min-width: 0 !important;
-          height: auto !important;
-          position: static !important;
-          flex-direction: column !important;
-          border-right: none !important;
-          border-bottom: 1px solid rgba(196,162,101,0.18);
-        }
-      }
-      @media (max-width: 480px) {
-        main { padding: 16px !important; }
+        /* Tighter heading sizes on mobile portrait */
+        h1 { font-size: 22px !important; line-height: 1.25 !important; }
+        h2 { font-size: 18px !important; }
+        /* Section eyebrow / page header subtitle wraps nicely */
+        p { word-break: break-word; }
       }
     </style>
   </head>
